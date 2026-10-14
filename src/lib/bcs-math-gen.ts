@@ -73,5 +73,15 @@ export function generateMathQuestions(): BcsQuestion[] {
     const part = (total / (x + y)) * x; if (!Number.isInteger(part)) continue;
     push(make(`${bn(total)} টাকা দুইজনের মধ্যে ${bn(x)}:${bn(y)} অনুপাতে ভাগ করলে প্রথমজন কত টাকা পাবে?`, part, [total - part, part + 10, total / 2 === part ? part + 20 : total / 2, part * 2], `মোট অংশ ${bn(x + y)}; প্রথমজন = ${bn(total)} × ${bn(x)}/${bn(x + y)} = ${bn(part)} টাকা।`, pos()));
   }
+  // Mental multiplication
+  for (let a = 12; a <= 49; a++) for (let b = 11; b <= 29; b += 2) {
+    const p = a * b;
+    push(make(`${bn(a)} × ${bn(b)} = কত?`, p, [p + 10, p - a, p + b, p + 100], `${bn(a)} × ${bn(b)} = ${bn(a)} × ${bn(b - 1)} + ${bn(a)} = ${bn(p)}।`, pos()));
+  }
+  // Percentage change
+  for (const old of [200, 400, 500, 800, 1000, 1250, 2000, 2500]) for (const d of [10, 20, 25, 40, 50, 100]) {
+    const pct = (d / old) * 100; if (!Number.isInteger(pct)) continue;
+    push(make(`কোনো জিনিসের দাম ${bn(old)} টাকা থেকে বেড়ে ${bn(old + d)} টাকা হলে শতকরা কত বৃদ্ধি পেল?`, pct, [pct + 5, pct * 2, pct + 1, d], `বৃদ্ধি = ${bn(d)} টাকা; শতকরা = ${bn(d)} ÷ ${bn(old)} × ১০০ = ${bn(pct)}%।`, pos(), '%'));
+  }
   return out.filter((q, i, all) => all.findIndex(o => o.q === q.q) === i);
 }
