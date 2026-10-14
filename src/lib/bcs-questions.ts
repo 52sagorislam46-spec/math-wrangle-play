@@ -59,7 +59,9 @@ const baseQuestions: BcsQuestion[] = [
 
 export const SUBJECTS = ['বাংলা ভাষা ও সাহিত্য', 'ইংরেজি ভাষা ও সাহিত্য', 'বাংলাদেশ বিষয়াবলী', 'আন্তর্জাতিক বিষয়াবলী', 'সাধারণ বিজ্ঞান ও তথ্যপ্রযুক্তি', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা', 'গাণিতিক যুক্তি ও মানসিক দক্ষতা', 'নৈতিকতা, মূল্যবোধ ও সুশাসন'] as const;
 const subjectMap: Record<string, string> = { 'বাংলা ব্যাকরণ': SUBJECTS[0], 'বাংলা সাহিত্য': SUBJECTS[0], 'বাংলাদেশ': SUBJECTS[2], 'আন্তর্জাতিক': SUBJECTS[3], 'বিজ্ঞান': SUBJECTS[4], 'গণিত': SUBJECTS[6] };
-export const bcsQuestions: BcsQuestion[] = [...baseQuestions.map(q => ({ ...q, subject: subjectMap[q.subject] ?? q.subject })), ...extraQuestions];
+// Duplicate question texts are dropped (first copy kept) so a question can never appear twice in a round.
+export const bcsQuestions: BcsQuestion[] = [...baseQuestions.map(q => ({ ...q, subject: subjectMap[q.subject] ?? q.subject })), ...extraQuestions]
+  .filter((q, i, all) => all.findIndex(o => o.q === q.q) === i);
 
 export type QuizMode = 'quick' | 'subject' | 'model';
 export const MODE_TIME: Record<QuizMode, number> = { quick: 10, subject: 20, model: 30 };
