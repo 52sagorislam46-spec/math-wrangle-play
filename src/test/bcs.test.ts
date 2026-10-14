@@ -35,3 +35,10 @@ describe('BCS question deck', () => {
     expect(bcsQuestions.filter(q => !q.explain?.trim())).toEqual([]);
   });
 });
+
+describe('BCS question bank size', () => {
+  it('has thousands of questions, each with 4 distinct options', () => {
+    expect(bcsQuestions.length).toBeGreaterThan(2000);
+    expect(bcsQuestions.filter(q => new Set(q.options).size !== 4)).toEqual([]);
+  });
+});
