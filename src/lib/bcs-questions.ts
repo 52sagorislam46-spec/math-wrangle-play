@@ -1,5 +1,6 @@
 import { extraQuestions } from './bcs-bank-extra';
 import { generateMathQuestions } from './bcs-math-gen';
+import { generateFactQuestions } from './bcs-fact-gen';
 export type BcsQuestion = { q: string; options: [string, string, string, string]; answer: 0 | 1 | 2 | 3; subject: string; explain?: string };
 
 // Verified, well-established BCS preliminary facts. `answer` is the index of the correct option.
@@ -61,7 +62,7 @@ const baseQuestions: BcsQuestion[] = [
 export const SUBJECTS = ['বাংলা ভাষা ও সাহিত্য', 'ইংরেজি ভাষা ও সাহিত্য', 'বাংলাদেশ বিষয়াবলী', 'আন্তর্জাতিক বিষয়াবলী', 'সাধারণ বিজ্ঞান ও তথ্যপ্রযুক্তি', 'ভূগোল, পরিবেশ ও দুর্যোগ ব্যবস্থাপনা', 'গাণিতিক যুক্তি ও মানসিক দক্ষতা', 'নৈতিকতা, মূল্যবোধ ও সুশাসন'] as const;
 const subjectMap: Record<string, string> = { 'বাংলা ব্যাকরণ': SUBJECTS[0], 'বাংলা সাহিত্য': SUBJECTS[0], 'বাংলাদেশ': SUBJECTS[2], 'আন্তর্জাতিক': SUBJECTS[3], 'বিজ্ঞান': SUBJECTS[4], 'গণিত': SUBJECTS[6] };
 // Duplicate question texts are dropped (first copy kept) so a question can never appear twice in a round.
-export const bcsQuestions: BcsQuestion[] = [...baseQuestions.map(q => ({ ...q, subject: subjectMap[q.subject] ?? q.subject })), ...extraQuestions, ...generateMathQuestions()]
+export const bcsQuestions: BcsQuestion[] = [...baseQuestions.map(q => ({ ...q, subject: subjectMap[q.subject] ?? q.subject })), ...extraQuestions, ...generateMathQuestions(), ...generateFactQuestions()]
   .filter((q, i, all) => all.findIndex(o => o.q === q.q) === i);
 
 export type QuizMode = 'quick' | 'subject' | 'model';
@@ -71,9 +72,17 @@ export function computeScore(correct: number, wrong: number, negative: boolean) 
 
 /** Shuffled deck that never repeats a question until the whole pool has been used. */
 export function makeDeck(subject: string | null, rand = Math.random) {
-  const pool = subject ? bcsQuestions.filter(q => q.subject === subject) : bcsQuestions;
-  let queue: BcsQuestion[] = [];
-  return () => { if (!queue.length) queue = shuffle(pool, rand); return queue.pop()!; };
+  // Mixed mode rotates subjects evenly so the large math pool does not dominate.
+  const subjects = subject ? [subject] : SUBJECTS.filter(s => bcsQuestions.some(q => q.subject === s));
+  const queues = new Map<string, BcsQuestion[]>();
+  let order: string[] = [];
+  return () => {
+    if (!order.length) order = shuffle(subjects, rand);
+    const s = order.pop()!;
+    let queue = queues.get(s);
+    if (!queue?.length) { queue = shuffle(bcsQuestions.filter(q => q.subject === s), rand); queues.set(s, queue); }
+    return queue.pop()!;
+  };
 }
 function shuffle<T>(arr: T[], rand: () => number) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); const t = a[i]!; a[i] = a[j]!; a[j] = t; } return a; }
 
