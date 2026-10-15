@@ -87,6 +87,5 @@ export function generateFactQuestions(): BcsQuestion[] {
     ...build(BN, bnAntonyms, k => `"${k}" শব্দের বিপরীত শব্দ কোনটি?`, (k, v) => `"${k}"-এর বিপরীত শব্দ "${v}"।`),
     ...build(BN, flip(bnAntonyms), k => `"${k}" শব্দের বিপরীত শব্দ কোনটি?`, (k, v) => `"${k}"-এর বিপরীত শব্দ "${v}"।`),
     ...build(GEO, continents, k => `${k} কোন মহাদেশে অবস্থিত?`, (k, v) => `${k} ${v} মহাদেশে অবস্থিত।`),
-    ...build(ETH, values, k => `${k} কোনটি?`, (k, v) => `${k}: ${v}।`),
   ];
 }
