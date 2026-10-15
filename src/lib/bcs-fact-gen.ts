@@ -10,7 +10,7 @@ function build(subject: string, rows: [string, string][], ask: (k: string) => st
     const others = values.filter(x => x !== v);
     const picks: string[] = [];
     while (picks.length < 3 && others.length) picks.push(others.splice(Math.floor(rand() * others.length), 1)[0]!);
-    const answer = Math.floor(rand() * 4);
+    const answer = Math.floor(rand() * 4) as BcsQuestion['answer'];
     const options = [...picks]; options.splice(answer, 0, v);
     return { subject, q: ask(k), options: options as BcsQuestion['options'], answer, explain: explain(k, v) };
   }).filter(q => q.options.length === 4);
