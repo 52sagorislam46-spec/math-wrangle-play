@@ -41,6 +41,7 @@ function BcsQuiz() {
   const deckRef = useRef<(() => BcsQuestion) | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
   const endless = count === 0;
+  const lockRef = useRef(-1); // prevents the same question being answered twice (timer + click)
 
   useEffect(() => { setStats(loadStats()); }, []);
   const beep = (kind: 'correct' | 'wrong' | 'tick') => {
@@ -55,7 +56,7 @@ function BcsQuiz() {
   const start = () => {
     const deck = makeDeck(mode === 'subject' ? subject : null); deckRef.current = deck;
     setQuestions(endless ? [deck()] : Array.from({ length: count }, deck));
-    setIndex(0); setSelected(null); setRemaining(time); setResults([]); setStatus('playing');
+    lockRef.current = -1; setIndex(0); setSelected(null); setRemaining(time); setResults([]); setStatus('playing');
   };
   const finish = (all: Outcome[]) => {
     setStatus('finished');
@@ -65,7 +66,8 @@ function BcsQuiz() {
   };
   const advance = (chosen: number | null) => {
     const q = questions[index];
-    if (!q) return;
+    if (!q || status !== 'playing' || lockRef.current === index) return;
+    lockRef.current = index;
     const out = grade(q, chosen);
     if (out.status === 'correct') beep('correct'); else if (out.status === 'wrong') beep('wrong');
     const all = [...results, out];
@@ -74,7 +76,7 @@ function BcsQuiz() {
     if (endless) { setQuestions(prev => [...prev, deckRef.current!()]); setIndex(index + 1); return; }
     if (index + 1 >= questions.length) finish(all); else setIndex(index + 1);
   };
-  const finishEarly = () => { finish(endless ? results : [...results, ...questions.slice(index).map(q => grade(q, null))]); };
+  const finishEarly = () => { if (!window.confirm('কুইজ এখনই শেষ করতে চান?')) return; finish(endless ? results : [...results, ...questions.slice(index).map(q => grade(q, null))]); };
 
   useEffect(() => {
     if (status !== 'playing') return;
@@ -82,7 +84,7 @@ function BcsQuiz() {
     if (remaining <= 3) beep('tick');
     const t = window.setTimeout(() => setRemaining(r => r - 1), 1000);
     return () => window.clearTimeout(t);
-  }); // re-run every render while playing
+  }, [status, remaining, index]);
 
   const correct = results.filter(r => r.status === 'correct').length;
   const wrong = results.filter(r => r.status === 'wrong').length;
